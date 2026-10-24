@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import History | Customer Feedback Intelligence</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 16px;
+            background: #f3f6fb;
+            color: #172554;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            margin: 22px 0;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        h1, h2 {
+            color: #142b55;
+        }
+
+        .muted {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .stat {
+            padding: 20px;
+            background: #eff6ff;
+            border-radius: 12px;
+        }
+
+        .stat p {
+            margin: 0 0 10px;
+            color: #475569;
+        }
+
+        .stat h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eff6ff;
+            white-space: nowrap;
+        }
+
+        td {
+            overflow-wrap: anywhere;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .completed {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .failed {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .processing {
+            color: #92400e;
+            background: #fef3c7;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 11px 16px;
+            margin: 5px 5px 5px 0;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+        }
+
+        .empty {
+            padding: 25px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <p>
+        <a href="{% url 'home' %}">← Back to Dashboard</a>
+    </p>
+
+    <h1>Import History</h1>
+
+    <p class="muted">
+        View previously uploaded customer feedback files and their
+        database import results.
+    </p>
+
+    <p>
+        <a class="button" href="{% url 'import_feedback' %}">
+            Import New Feedback
+        </a>
+    </p>
+
+    <section class="card">
+        <h2>Import Summary</h2>
+
+        <div class="summary">
+            <div class="stat">
+                <p>Total Imports</p>
+                <h2>{{ total_imports }}</h2>
+            </div>
+
+            <div class="stat">
+                <p>Completed</p>
+                <h2>{{ completed_imports }}</h2>
+            </div>
+
+            <div class="stat">
+                <p>Failed</p>
+                <h2>{{ failed_imports }}</h2>
+            </div>
+
+            <div class="stat">
+                <p>Processing</p>
+                <h2>{{ processing_imports }}</h2>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Previous Imports</h2>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Filename</th>
+                        <th>Status</th>
+                        <th>Total Rows</th>
+                        <th>Valid</th>
+                        <th>Invalid</th>
+                        <th>Analyzed</th>
+                        <th>Imported At</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in imports %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.filename }}</td>
+
+                        <td>
+                            <span class="status {{ item.status }}">
+                                {{ item.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td>{{ item.total_rows }}</td>
+                        <td>{{ item.valid_count }}</td>
+                        <td>{{ item.invalid_count }}</td>
+                        <td>{{ item.analyzed_count }}</td>
+                        <td>{{ item.created_at|date:"d M Y, h:i A" }}</td>
+                        <td>
+                           <a href="{% url 'import_detail' item.id %}">
+                              View Details
+                           </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="empty">
+                            No imports found. Upload a CSV file to get started.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="muted">
+            Import records are retrieved from your Django database.
+        </p>
+    </section>
+
+</div>
+</body>
+</html>

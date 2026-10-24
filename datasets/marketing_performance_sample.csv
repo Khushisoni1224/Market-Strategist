@@ -1,0 +1,11 @@
+content_date,content_id,content_type,product_name,reach,impressions,views,likes,comments,saves,shares,profile_visits,clicks,enquiries,conversions
+2026-10-01,POST001,Image,Floral Dress,1200,1800,900,85,12,20,15,110,75,18,8
+2026-10-02,POST002,Reel,Casual Shirt,2500,3600,3000,190,25,55,40,240,160,35,16
+2026-10-03,POST003,Carousel,Denim Jeans,900,1400,700,48,8,14,9,65,42,10,4
+2026-10-04,POST004,Image,Winter Jacket,1500,2200,1100,95,14,28,18,130,90,22,11
+2026-10-05,POST005,Reel,Running Shoes,3200,4500,3800,240,32,70,55,310,210,48,24
+2026-10-06,POST006,Image,Cotton T-Shirt,800,1200,600,35,5,10,6,50,30,7,2
+2026-10-07,POST007,Carousel,Handbag,1800,2600,1300,110,16,32,21,155,105,26,13
+2026-10-08,POST008,Reel,Summer Sandals,2100,3100,2700,165,22,45,30,200,140,31,15
+2026-10-09,POST009,Image,Formal Trousers,1000,1600,750,55,7,16,11,80,55,12,5
+2026-10-10,POST010,Carousel,Accessories Set,1400,2000,950,72,10,22,13,100,68,15,7

@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Details | Customer Feedback Intelligence</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 16px;
+            background: #f3f6fb;
+            color: #172554;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            margin: 22px 0;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        h1, h2 {
+            color: #142b55;
+        }
+
+        .muted {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+        }
+
+        .stat {
+            padding: 20px;
+            background: #eff6ff;
+            border-radius: 12px;
+        }
+
+        .stat p {
+            margin: 0 0 10px;
+            color: #475569;
+        }
+
+        .stat h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eff6ff;
+            white-space: nowrap;
+        }
+
+        td.review {
+            min-width: 280px;
+            overflow-wrap: anywhere;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .positive {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .negative {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .neutral {
+            color: #92400e;
+            background: #fef3c7;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 11px 16px;
+            margin: 5px 5px 5px 0;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+        }
+
+        .empty {
+            padding: 25px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <p>
+        <a href="{% url 'import_history' %}">← Back to Import History</a>
+    </p>
+
+    <h1>Import Details</h1>
+
+    <p class="muted">
+        Review the saved customer feedback and sentiment analysis
+        for this uploaded file.
+    </p>
+
+    <section class="card">
+        <h2>Import Information</h2>
+
+        <p><strong>Import ID:</strong> {{ import_record.id }}</p>
+        <p><strong>Filename:</strong> {{ import_record.filename }}</p>
+        <p><strong>Status:</strong> {{ import_record.get_status_display }}</p>
+        
+        {% if import_record.error_message %}
+          <p>
+             <strong>Error details:</strong>
+             {{ import_record.error_message }}
+          </p>
+        {% endif %}
+
+        <p><strong>Imported at:</strong> {{ import_record.created_at|date:"d M Y, h:i A" }}</p>
+        <p><strong>Total rows:</strong> {{ import_record.total_rows }}</p>
+        <p><strong>Valid reviews:</strong> {{ import_record.valid_count }}</p>
+        <p><strong>Invalid rows:</strong> {{ import_record.invalid_count }}</p>
+        <p><strong>Analyzed reviews:</strong> {{ import_record.analyzed_count }}</p>
+    </section>
+
+    <section class="card">
+        <h2>Sentiment Summary</h2>
+
+        <div class="summary">
+            <div class="stat">
+                <p>Positive Reviews</p>
+                <h2>{{ sentiment_counts.Positive }}</h2>
+            </div>
+
+            <div class="stat">
+                <p>Negative Reviews</p>
+                <h2>{{ sentiment_counts.Negative }}</h2>
+            </div>
+
+            <div class="stat">
+                <p>Neutral Reviews</p>
+                <h2>{{ sentiment_counts.Neutral }}</h2>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Saved Customer Reviews</h2>
+
+        <p class="muted">
+            Review text is displayed after the existing personal-information
+            masking step.
+        </p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>CSV Row</th>
+                        <th>Review Text</th>
+                        <th>Sentiment</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for review in feedback_records %}
+                    <tr>
+                        <td>{{ review.row_number }}</td>
+
+                        <td class="review">
+                            {{ review.review_text }}
+                        </td>
+
+                        <td>
+                            <span class="badge {{ review.sentiment|lower }}">
+                                {{ review.sentiment }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ review.sentiment_score|floatformat:3 }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty">
+                            No saved reviews are associated with this import.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <p>
+        <a class="button" href="{% url 'import_history' %}">
+            Back to Import History
+        </a>
+
+        <a class="button" href="{% url 'import_feedback' %}">
+            Import Another File
+        </a>
+    </p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,610 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Analytics Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #243247;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            color: #203b63;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .actions,
+        .filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #2457a7;
+            color: white;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .button.secondary {
+            background: #475569;
+        }
+
+        .filter-card {
+            background: white;
+            padding: 22px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-card h2 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-field label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        .filter-field input,
+        .filter-field select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .filter-actions {
+            margin-top: 18px;
+            margin-bottom: 0;
+        }
+
+        .filter-error {
+            padding: 12px;
+            color: #9c2525;
+            background: #fde8e7;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+            min-width: 0;
+        }
+
+        .card-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #203b63;
+            overflow-wrap: anywhere;
+        }
+
+        .card-note {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .chart-card,
+        .table-card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+            min-width: 0;
+        }
+
+        .chart-card h2,
+        .table-card h2 {
+            font-size: 18px;
+            margin-top: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #edf2f7;
+            color: #334155;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .empty {
+            padding: 25px;
+            background: #fff7df;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .missing {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 14px;
+            }
+
+            .card-value {
+                font-size: 24px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Marketing Performance Analytics</h1>
+
+    <p class="subtitle">
+        Monitor reach, engagement, traffic, and conversions across your content.
+    </p>
+
+    <div class="actions">
+        <a class="button" href="{% url 'import_marketing' %}">
+            + Import Marketing Data
+        </a>
+
+        <a class="button secondary" href="/">
+            Customer Feedback Dashboard
+        </a>
+    </div>
+
+    <!-- FILTER SECTION -->
+    <div class="filter-card">
+        <h2>Filter Marketing Performance</h2>
+
+        {% if filter_error %}
+            <p class="filter-error">{{ filter_error }}</p>
+        {% endif %}
+
+        <form method="get" action="{% url 'marketing_dashboard' %}">
+            <div class="filter-grid">
+
+                <div class="filter-field">
+                    <label for="start_date">Start date</label>
+                    <input
+                        type="date"
+                        id="start_date"
+                        name="start_date"
+                        value="{{ start_date }}"
+                    >
+                </div>
+
+                <div class="filter-field">
+                    <label for="end_date">End date</label>
+                    <input
+                        type="date"
+                        id="end_date"
+                        name="end_date"
+                        value="{{ end_date }}"
+                    >
+                </div>
+
+                <div class="filter-field">
+                    <label for="product">Product</label>
+                    <select id="product" name="product">
+                        <option value="">All products</option>
+
+                        {% for product in products %}
+                            <option
+                                value="{{ product }}"
+                                {% if selected_product == product %}selected{% endif %}
+                            >
+                                {{ product }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="content_type">Content type</label>
+                    <select id="content_type" name="content_type">
+                        <option value="">All content types</option>
+
+                        {% for item in content_types %}
+                            <option
+                                value="{{ item }}"
+                                {% if selected_content_type == item %}selected{% endif %}
+                            >
+                                {{ item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="filter-actions">
+                <button class="button" type="submit">
+                    Apply Filters
+                </button>
+
+                <a
+                    class="button secondary"
+                    href="{% url 'marketing_dashboard' %}"
+                >
+                    Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {% if summary.record_count == 0 %}
+
+        <div class="empty">
+            <strong>No marketing records match your selection.</strong>
+            Try changing the filters or clearing them to view all records.
+        </div>
+
+    {% else %}
+
+        <!-- SUMMARY CARDS -->
+        <div class="cards">
+
+            <div class="card">
+                <div class="card-label">Content Records</div>
+                <div class="card-value">
+                    {{ summary.record_count }}
+                </div>
+                <div class="card-note">Records matching your filters</div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Total Reach</div>
+                <div class="card-value">
+                    {{ summary.total_reach|default_if_none:"—" }}
+                </div>
+                <div class="card-note">
+                    {{ summary.reach_count }} records with reach data
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Total Impressions</div>
+                <div class="card-value">
+                    {{ summary.total_impressions|default_if_none:"—" }}
+                </div>
+                <div class="card-note">
+                    {{ summary.impressions_count }} records with impressions data
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Total Engagement</div>
+                <div class="card-value">
+                    {% if summary.total_engagement != None %}
+                        {{ summary.total_engagement }}
+                    {% else %}
+                        <span class="missing">Unavailable</span>
+                    {% endif %}
+                </div>
+                <div class="card-note">
+                    Likes + comments + saves + shares
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Total Clicks</div>
+                <div class="card-value">
+                    {{ summary.total_clicks|default_if_none:"—" }}
+                </div>
+                <div class="card-note">
+                    {{ summary.clicks_count }} records with clicks data
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Total Conversions</div>
+                <div class="card-value">
+                    {{ summary.total_conversions|default_if_none:"—" }}
+                </div>
+                <div class="card-note">
+                    {{ summary.conversions_count }} records with conversion data
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RATE CARDS -->
+        <div class="cards">
+
+            <div class="card">
+                <div class="card-label">Engagement Rate</div>
+                <div class="card-value">
+                    {% if summary.engagement_rate != None %}
+                        {{ summary.engagement_rate }}%
+                    {% else %}
+                        <span class="missing">Unavailable</span>
+                    {% endif %}
+                </div>
+                <div class="card-note">
+                    Engagement ÷ impressions × 100
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Click-through Rate</div>
+                <div class="card-value">
+                    {% if summary.click_through_rate != None %}
+                        {{ summary.click_through_rate }}%
+                    {% else %}
+                        <span class="missing">Unavailable</span>
+                    {% endif %}
+                </div>
+                <div class="card-note">
+                    Clicks ÷ impressions × 100
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Conversion Rate</div>
+                <div class="card-value">
+                    {% if summary.conversion_rate != None %}
+                        {{ summary.conversion_rate }}%
+                    {% else %}
+                        <span class="missing">Unavailable</span>
+                    {% endif %}
+                </div>
+                <div class="card-note">
+                    Conversions ÷ clicks × 100
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CHARTS -->
+        <div class="charts">
+
+            <div class="chart-card">
+                <h2>Reach by Content</h2>
+                <div class="chart-container">
+                    <canvas id="reachChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2>Clicks by Content</h2>
+                <div class="chart-container">
+                    <canvas id="clicksChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h2>Conversions by Content</h2>
+                <div class="chart-container">
+                    <canvas id="conversionsChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PERFORMANCE TABLE -->
+        <div class="table-card">
+            <h2>Marketing Content Performance</h2>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Content ID</th>
+                            <th>Type</th>
+                            <th>Product</th>
+                            <th>Reach</th>
+                            <th>Impressions</th>
+                            <th>Likes</th>
+                            <th>Comments</th>
+                            <th>Clicks</th>
+                            <th>Conversions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for record in records %}
+                            <tr>
+                                <td>{{ record.content_date|date:"Y-m-d" }}</td>
+                                <td>{{ record.content_id }}</td>
+                                <td>{{ record.content_type }}</td>
+                                <td>{{ record.product_name }}</td>
+                                <td>{{ record.reach|default_if_none:"Missing" }}</td>
+                                <td>{{ record.impressions|default_if_none:"Missing" }}</td>
+                                <td>{{ record.likes|default_if_none:"Missing" }}</td>
+                                <td>{{ record.comments|default_if_none:"Missing" }}</td>
+                                <td>{{ record.clicks|default_if_none:"Missing" }}</td>
+                                <td>{{ record.conversions|default_if_none:"Missing" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="10">No records found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    {% endif %}
+
+</div>
+
+<!-- Safely pass chart data from Django to JavaScript -->
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_reach|json_script:"chart-reach" }}
+{{ chart_clicks|json_script:"chart-clicks" }}
+{{ chart_conversions|json_script:"chart-conversions" }}
+
+<script>
+    const labels = JSON.parse(
+        document.getElementById("chart-labels").textContent
+    );
+
+    const reachValues = JSON.parse(
+        document.getElementById("chart-reach").textContent
+    );
+
+    const clickValues = JSON.parse(
+        document.getElementById("chart-clicks").textContent
+    );
+
+    const conversionValues = JSON.parse(
+        document.getElementById("chart-conversions").textContent
+    );
+
+    function createBarChart(canvasId, values, label) {
+        const canvas = document.getElementById(canvasId);
+
+        if (!canvas || labels.length === 0) {
+            return;
+        }
+
+        new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: values,
+                    backgroundColor: "#4f80d9",
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: label
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    createBarChart("reachChart", reachValues, "Reach");
+    createBarChart("clicksChart", clickValues, "Clicks");
+    createBarChart(
+        "conversionsChart",
+        conversionValues,
+        "Conversions"
+    );
+</script>
+
+</body>
+</html>

@@ -1,0 +1,755 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>E-Commerce Sentiment Analysis</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            margin: 0;
+            color: #263445;
+        }
+
+        header {
+            background: #173b67;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        header h1 {
+            margin: 0 0 12px;
+            font-size: 32px;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000010;
+            margin-bottom: 24px;
+        }
+
+        .stat-card h3 {
+            font-size: 18px;
+            margin: 0 0 20px;
+        }
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .positive {
+            color: #16804a;
+        }
+
+        .negative {
+            color: #c0392b;
+        }
+
+        .neutral {
+            color: #b7791f;
+        }
+
+        h2 {
+            color: #173b67;
+            margin-top: 0;
+        }
+
+        .description {
+            color: #64748b;
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        /* Sentiment chart */
+
+        .chart-container {
+            max-width: 420px;
+            height: 340px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Feedback summary */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(160px, 1fr)
+            );
+            gap: 14px;
+            margin: 22px 0;
+        }
+
+        .summary-box {
+            padding: 18px;
+            background: #f3f6fb;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .summary-box h3 {
+            font-size: 15px;
+            margin: 0 0 14px;
+            color: #475569;
+        }
+
+        .summary-number {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .insight-list,
+        .recommendation-list {
+            padding-left: 24px;
+            line-height: 1.8;
+        }
+
+        .insight-list li,
+        .recommendation-list li {
+            margin-bottom: 10px;
+        }
+
+        .recommendation-list li {
+            padding-left: 5px;
+        }
+
+        /* Filter form */
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 16px;
+            margin: 24px 0;
+            padding: 18px;
+            background: #f3f6fb;
+            border-radius: 10px;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .filter-field label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .filter-field select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            color: #263445;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-actions button,
+        .reset-button {
+            display: inline-block;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #173b67;
+            color: white;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .filter-actions button:hover {
+            background: #24558e;
+        }
+
+        .reset-button {
+            background: #64748b;
+        }
+
+        .reset-button:hover {
+            background: #475569;
+        }
+
+        /* Customer review table */
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eaf0f8;
+            color: #173b67;
+            white-space: nowrap;
+        }
+
+        .review-text {
+            min-width: 320px;
+            max-width: 600px;
+            overflow-wrap: anywhere;
+            line-height: 1.5;
+        }
+
+        .score {
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        .sentiment-label {
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @media (max-width: 850px) {
+            .cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            header h1 {
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-field {
+                width: 100%;
+            }
+
+            .filter-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            main {
+                padding: 0 12px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>E-Commerce Sentiment Analysis</h1>
+        <p>Understanding customer opinions using VADER</p>
+    </header>
+
+    <main>
+
+        <!-- 1. Overall sentiment statistics -->
+        <section class="cards">
+
+            <div class="card stat-card">
+                <h3>Total Reviews</h3>
+                <div class="number">{{ total_reviews }}</div>
+            </div>
+
+            <div class="card stat-card">
+                <h3>Positive Reviews</h3>
+                <div class="number positive">{{ positive_count }}</div>
+            </div>
+
+            <div class="card stat-card">
+                <h3>Negative Reviews</h3>
+                <div class="number negative">{{ negative_count }}</div>
+            </div>
+
+            <div class="card stat-card">
+                <h3>Neutral Reviews</h3>
+                <div class="number neutral">{{ neutral_count }}</div>
+            </div>
+
+        </section>
+
+        <!-- 2. Sentiment pie chart -->
+        <section class="card">
+
+            <h2>Customer Sentiment Distribution</h2>
+
+            <p class="description">
+                Distribution of positive, negative, and neutral customer reviews.
+            </p>
+
+            <div class="chart-container">
+                <canvas id="sentimentChart"></canvas>
+            </div>
+
+        </section>
+
+        <!-- 3. Customer complaint and theme analysis -->
+        <section class="card">
+
+            <h2>Customer Complaint and Theme Analysis</h2>
+
+            <p class="description">
+                Potential recurring topics identified in negative customer
+                reviews using keyword matching.
+            </p>
+
+            <p>
+                Negative reviews analyzed:
+                <strong>{{ complaint_analysis.negative_total }}</strong>
+            </p>
+
+            {% for item in complaint_themes %}
+
+            <div style="
+                padding: 16px;
+                margin-bottom: 14px;
+                background: #f3f6fb;
+                border-radius: 8px;
+            ">
+
+                <h3 style="margin-top: 0; color: #173b67;">
+                    {{ item.theme }}
+                </h3>
+
+                <p>
+                    Reviews mentioning this theme:
+                    <strong>{{ item.count }}</strong>
+                </p>
+
+                {% if item.count > 0 %}
+
+                    <p><strong>Example reviews:</strong></p>
+
+                    <ul>
+                        {% for example in item.examples %}
+                        <li style="margin-bottom: 10px; line-height: 1.5;">
+                            {{ example }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                {% else %}
+
+                    <p>No matching negative reviews were found for this theme.</p>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        </section>
+
+        <!-- 4. Customer feedback summary and business recommendations -->
+        <section class="card">
+
+            <h2>Customer Feedback Summary</h2>
+
+            <p class="description">
+                Key findings and recommendations based on the analyzed
+                customer reviews.
+            </p>
+
+            <div class="summary-grid">
+
+                <div class="summary-box">
+                    <h3>Reviews Analyzed</h3>
+                    <p class="summary-number">
+                        {{ feedback_summary.total_reviews }}
+                    </p>
+                </div>
+
+                <div class="summary-box">
+                    <h3>Positive Reviews</h3>
+                    <p class="summary-number positive">
+                        {{ feedback_summary.positive_percentage }}%
+                    </p>
+                </div>
+
+                <div class="summary-box">
+                    <h3>Negative Reviews</h3>
+                    <p class="summary-number negative">
+                        {{ feedback_summary.negative_percentage }}%
+                    </p>
+                </div>
+
+                <div class="summary-box">
+                    <h3>Neutral Reviews</h3>
+                    <p class="summary-number neutral">
+                        {{ feedback_summary.neutral_percentage }}%
+                    </p>
+                </div>
+
+                <div class="summary-box">
+                    <h3>Average Customer Rating</h3>
+                    <p class="summary-number">
+                        {{ feedback_summary.average_rating|floatformat:2 }}
+                        <span style="font-size: 16px;">/ 5</span>
+                    </p>
+                </div>
+
+            </div>
+
+            <h3 style="color: #173b67; margin-top: 28px;">
+                Key Findings
+            </h3>
+
+            <ul class="insight-list">
+
+                <li>
+                    Positive sentiment accounts for
+                    <strong>{{ feedback_summary.positive_percentage }}%</strong>
+                    of reviews with available review text.
+                </li>
+
+                <li>
+                    Negative sentiment accounts for
+                    <strong>{{ feedback_summary.negative_percentage }}%</strong>
+                    of reviews with available review text.
+                </li>
+
+                <li>
+                    Neutral sentiment accounts for
+                    <strong>{{ feedback_summary.neutral_percentage }}%</strong>
+                    of reviews with available review text.
+                </li>
+
+                <li>
+                    The average customer rating is
+                    <strong>{{ feedback_summary.average_rating|floatformat:2 }}/5</strong>.
+                </li>
+
+                {% if complaint_themes %}
+                    {% if complaint_themes.0.count > 0 %}
+                    <li>
+                        The most frequently matched complaint theme is
+                        <strong>{{ complaint_themes.0.theme }}</strong>,
+                        appearing in {{ complaint_themes.0.count }}
+                        negative reviews.
+                    </li>
+                    {% endif %}
+                {% endif %}
+
+            </ul>
+
+            <h3 style="color: #173b67; margin-top: 28px;">
+                Business Recommendations
+            </h3>
+
+            <ul class="recommendation-list">
+
+                {% for recommendation in feedback_summary.recommendations %}
+                <li>{{ recommendation }}</li>
+                {% empty %}
+                <li>
+                    Continue monitoring customer feedback to identify
+                    opportunities for improvement.
+                </li>
+                {% endfor %}
+
+            </ul>
+
+            <p class="description" style="margin-top: 20px;">
+                Note: Sentiment percentages are based on VADER classifications.
+                Complaint themes use keyword matching, so findings should be
+                reviewed before making business decisions.
+            </p>
+
+        </section>
+
+        <!-- 5. Customer review table and filters -->
+        <section class="card">
+
+            <h2>Analyzed Customer Reviews</h2>
+
+            <p class="description">
+                Filter customer reviews by sentiment, rating, or department.
+            </p>
+
+            <form method="GET" action="" class="filter-form">
+
+                <div class="filter-field">
+                    <label for="sentiment">Sentiment</label>
+
+                    <select name="sentiment" id="sentiment">
+                        <option value="">All Sentiments</option>
+
+                        <option value="Positive"
+                            {% if selected_sentiment == "Positive" %}selected{% endif %}>
+                            Positive
+                        </option>
+
+                        <option value="Negative"
+                            {% if selected_sentiment == "Negative" %}selected{% endif %}>
+                            Negative
+                        </option>
+
+                        <option value="Neutral"
+                            {% if selected_sentiment == "Neutral" %}selected{% endif %}>
+                            Neutral
+                        </option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="rating">Rating</label>
+
+                    <select name="rating" id="rating">
+                        <option value="">All Ratings</option>
+
+                        {% for value in "12345" %}
+                        <option value="{{ value }}"
+                            {% if selected_rating == value %}selected{% endif %}>
+                            {{ value }} Star{% if value != "1" %}s{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <label for="department">Department</label>
+
+                    <select name="department" id="department">
+                        <option value="">All Departments</option>
+
+                        {% for department in departments %}
+                        <option value="{{ department }}"
+                            {% if selected_department == department %}selected{% endif %}>
+                            {{ department }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit">Apply Filters</button>
+
+                    <a href="{% url 'home' %}" class="reset-button">
+                        Reset
+                    </a>
+                </div>
+
+            </form>
+
+            <p class="description">
+                Matching reviews: <strong>{{ filtered_count }}</strong>.
+                Showing up to 100 matching reviews.
+            </p>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Review Text</th>
+                            <th>Rating</th>
+                            <th>Sentiment Score</th>
+                            <th>Sentiment</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for review in reviews %}
+
+                        <tr>
+
+                            <td class="review-text">
+                                {{ review.review_text|default:"No review text available" }}
+                            </td>
+
+                            <td>
+                                {{ review.rating|default_if_none:"N/A" }}
+                            </td>
+
+                            <td class="score">
+                                {{ review.sentiment_score|floatformat:3 }}
+                            </td>
+
+                            <td class="sentiment-label">
+
+                                {% if review.sentiment == "Positive" %}
+                                    <span class="positive">Positive</span>
+
+                                {% elif review.sentiment == "Negative" %}
+                                    <span class="negative">Negative</span>
+
+                                {% else %}
+                                    <span class="neutral">Neutral</span>
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="4">
+                                No reviews match the selected filters.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        E-Commerce Sentiment Analysis Project | Django and VADER
+    </footer>
+
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Pass sentiment chart data safely from Django -->
+    {{ sentiment_chart|json_script:"sentiment-chart-data" }}
+
+    <script>
+        const chartElement = document.getElementById("sentiment-chart-data");
+        const chartCanvas = document.getElementById("sentimentChart");
+
+        if (
+            chartElement &&
+            chartCanvas &&
+            typeof Chart !== "undefined"
+        ) {
+            const chartData = JSON.parse(chartElement.textContent);
+
+            new Chart(chartCanvas, {
+                type: "pie",
+
+                data: {
+                    labels: chartData.labels,
+
+                    datasets: [{
+                        data: chartData.values,
+
+                        backgroundColor: [
+                            "#16804a",
+                            "#c0392b",
+                            "#d4a017"
+                        ],
+
+                        borderColor: "#ffffff",
+                        borderWidth: 2
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const values = context.dataset.data;
+
+                                    const total = values.reduce(
+                                        (sum, value) => sum + value,
+                                        0
+                                    );
+
+                                    const value = context.raw;
+
+                                    const percentage = total
+                                        ? ((value / total) * 100).toFixed(2)
+                                        : "0.00";
+
+                                    return context.label + ": "
+                                        + value + " (" + percentage + "%)";
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

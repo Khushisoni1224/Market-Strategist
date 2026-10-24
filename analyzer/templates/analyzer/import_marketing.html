@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Marketing Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+            color: #263238;
+        }
+        .container {
+            max-width: 950px;
+            margin: auto;
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+        h1 { color: #243b55; }
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .error { background: #fde8e7; color: #9c2525; }
+        .success { background: #e4f7e9; color: #216b36; }
+        .warning { background: #fff3cd; color: #725500; }
+        button, .back-link {
+            display: inline-block;
+            background: #2457a7;
+            color: white;
+            padding: 11px 17px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 9px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th { background: #edf2f7; }
+        .table-wrap { overflow-x: auto; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Marketing Performance Data Import</h1>
+    <p>Upload a CSV file containing your marketing content metrics.</p>
+
+    <p><strong>Required columns:</strong>
+        content_date, content_id, content_type, product_name
+    </p>
+    <p><strong>Optional metrics:</strong>
+        reach, impressions, views, likes, comments, saves, shares,
+        profile_visits, clicks, enquiries, conversions
+    </p>
+    <p>Maximum file size: 5 MB. Maximum rows: 10,000.</p>
+
+    {% if error %}
+        <div class="message error">
+            <strong>Import failed:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="marketing_file">Choose marketing CSV:</label>
+        <br><br>
+        <input
+            type="file"
+            id="marketing_file"
+            name="marketing_file"
+            accept=".csv"
+            required
+        >
+        <br>
+        <button type="submit">Import Marketing Data</button>
+    </form>
+
+    {% if result %}
+        <hr>
+        <h2>Import Results</h2>
+
+        <div class="message success">
+            <strong>File:</strong> {{ result.filename }}<br>
+            <strong>Total rows:</strong> {{ result.total_rows }}<br>
+            <strong>Saved records:</strong> {{ result.saved_count }}<br>
+            <strong>Rejected rows:</strong> {{ result.invalid_count }}
+        </div>
+
+        {% if result.warnings %}
+            <h3>Warnings</h3>
+            {% for warning in result.warnings %}
+                <div class="message warning">{{ warning }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if result.errors %}
+            <h3>Validation Errors (first 50)</h3>
+            <ul>
+                {% for item in result.errors %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if result.preview %}
+            <h3>Saved Data Preview</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Content ID</th>
+                            <th>Type</th>
+                            <th>Product</th>
+                            <th>Reach</th>
+                            <th>Impressions</th>
+                            <th>Clicks</th>
+                            <th>Conversions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in result.preview %}
+                            <tr>
+                                <td>{{ item.content_date }}</td>
+                                <td>{{ item.content_id }}</td>
+                                <td>{{ item.content_type }}</td>
+                                <td>{{ item.product_name }}</td>
+                                <td>{{ item.reach|default_if_none:"Missing" }}</td>
+                                <td>{{ item.impressions|default_if_none:"Missing" }}</td>
+                                <td>{{ item.clicks|default_if_none:"Missing" }}</td>
+                                <td>{{ item.conversions|default_if_none:"Missing" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <p>
+        <a class="back-link" href="/">Back to Dashboard</a>
+    </p>
+</div>
+</body>
+</html>
