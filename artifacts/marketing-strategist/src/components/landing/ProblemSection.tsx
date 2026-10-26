@@ -1,0 +1,10 @@
+import { BarChart3, MessageSquareText, PackageSearch, Radar } from 'lucide-react';
+const pillars = [
+  { title:'Product Intelligence', text:'See which products attract attention and where promotion potential is emerging.', icon:PackageSearch, label:'WHAT YOU SELL' },
+  { title:'Customer Intelligence', text:'Notice recurring questions, positive moments and friction in customer feedback.', icon:MessageSquareText, label:'WHAT PEOPLE SAY' },
+  { title:'Performance Intelligence', text:'Understand how content and channels are earning attention and response.', icon:BarChart3, label:'WHAT IS RESONATING' },
+  { title:'Market Intelligence', text:'Bring public market context into view alongside your own business signals.', icon:Radar, label:'WHAT IS CHANGING' },
+];
+export function ProblemSection() {
+  return <section className="border-y border-slate-200 bg-white py-20 sm:py-24"><div className="mx-auto max-w-[1280px] px-5 sm:px-10"><div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr]"><div><div className="mb-3 text-[10px] font-bold uppercase tracking-[.16em] text-[#6E49D9]">The useful signals are already there</div><h2 className="font-display text-3xl font-extrabold tracking-[-.045em] sm:text-4xl">Four kinds of intelligence. One clearer view.</h2><p className="mt-4 max-w-md text-sm leading-6 text-slate-500">Small business decisions rarely come from one chart. The context lives across your products, customers, channels and the wider market.</p></div><div className="grid gap-3 sm:grid-cols-2">{pillars.map(({title,text,icon:Icon,label})=><article key={title} className="rounded-2xl border border-slate-200 bg-[#FBFAFD] p-5 transition hover:border-[#DCD2F8]" data-testid={`pillar-${title.toLowerCase().replaceAll(' ','-')}`}><div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#F0EBFF] text-[#5318EB]"><Icon size={18}/></span><span className="text-[9px] font-bold tracking-[.12em] text-slate-400">{label}</span></div><h3 className="mt-5 font-display text-base font-extrabold">{title}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{text}</p></article>)}</div></div></div></section>;
+}

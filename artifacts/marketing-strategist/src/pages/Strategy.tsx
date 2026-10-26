@@ -1,0 +1,21 @@
+import { useCallback, useState } from 'react';
+import { ArrowRight, Check, CircleHelp, Clock3, ShieldCheck, X } from 'lucide-react';
+import { Workspace } from '../components/common/Workspace';
+import { EmptyState, LoadError, LoadingRows, PageHeading, Panel, useDemoLoad } from '../components/common/Elements';
+import { StrategyCard } from '../components/strategy/StrategyCard';
+import { api } from '../services/api';
+export default function Strategy() {
+  const load=useCallback(()=>api.getRecommendations(),[]);const {data,loading,error,refresh}=useDemoLoad(load);
+  const [busy,setBusy]=useState<string|null>(null);const [notice,setNotice]=useState('');const [expanded,setExpanded]=useState<string|null>('rec-01');
+  const pending=data?.filter((item)=>item.status==='PENDING')??[];const decided=data?.filter((item)=>item.status!=='PENDING')??[];
+  async function decide(id:string,status:'APPROVED'|'REJECTED'){setBusy(id);setNotice('');try{await api.updateRecommendationStatus(id,status);setNotice(status==='APPROVED'?'Approved and added to decision history. The action is yours to plan.':'Dismissed. This recommendation will not be moved forward.');refresh();}catch{setNotice('Could not save this decision. Please try again.');}finally{setBusy(null);}}
+  return <Workspace><PageHeading eyebrow="Your next moves" title="Strategy" description="Ideas rooted in your business signals. Review the reasoning, then choose what fits." action={<div className="flex items-center gap-2 rounded-xl border border-[#E5DDFB] bg-white px-3 py-2 text-[11px] font-bold text-[#5318EB]"><ShieldCheck size={15}/>You stay in control</div>}/>
+    <div className="mb-5 grid gap-4 md:grid-cols-[1fr_auto]"><Panel className="flex items-start gap-3 !border-[#E7DFFC] !bg-[#F8F5FF]"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-[#5318EB]"><CircleHelp size={18}/></span><div><div className="text-sm font-bold">A recommendation is not an automatic action.</div><p className="mt-1 text-xs leading-5 text-slate-600">Approving records your intent to explore an idea. It will not publish a post, send a message or spend a budget.</p></div></Panel><Panel className="flex min-w-40 items-center justify-between !p-4"><div><div className="font-display text-2xl font-extrabold">{pending.length}</div><div className="text-[10px] text-slate-500">Awaiting your review</div></div><Clock3 size={18} className="text-[#5318EB]"/></Panel></div>
+    {notice&&<div className="mb-5 rounded-xl border border-[#E5DDFB] bg-white px-4 py-3 text-xs font-semibold text-[#5318EB]" role="status" data-testid="status-strategy">{notice}</div>}
+    <div className="space-y-4">{loading?<LoadingRows count={3}/>:error?<LoadError onRetry={refresh}/>:!data?.length?<EmptyState title="No recommendations yet" text="As your workspace gathers sample signals, possible next steps will appear here."/>:<>
+      {pending.map((item,index)=><StrategyCard key={item.id} recommendation={item} index={index} expanded={expanded===item.id} busy={busy===item.id} onToggle={()=>setExpanded(expanded===item.id?null:item.id)} onApprove={()=>decide(item.id,'APPROVED')} onDismiss={()=>decide(item.id,'REJECTED')}/>)}
+      {decided.length>0&&<div className="pt-4"><h2 className="mb-3 font-display text-sm font-extrabold text-slate-700">Already decided</h2><div className="space-y-2">{decided.map((item)=><div key={item.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center" data-testid={`row-decided-${item.id}`}><div className={`grid h-8 w-8 place-items-center rounded-lg ${item.status==='APPROVED'?'bg-emerald-50 text-emerald-700':'bg-slate-100 text-slate-500'}`}>{item.status==='APPROVED'?<Check size={15}/>:<X size={15}/>}</div><div className="flex-1"><div className="text-xs font-bold leading-5">{item.title}</div><div className="mt-1 text-[10px] text-slate-400">Seller decision · {item.status.toLowerCase()}</div></div><span className={`text-[10px] font-bold uppercase ${item.status==='APPROVED'?'text-emerald-700':'text-slate-400'}`}>{item.status}</span></div>)}</div></div>}
+      {!pending.length&&!decided.length&&<div className="pt-4"><span className="text-xs text-slate-500">No recommendations to review.</span><ArrowRight className="ml-2 inline" size={13}/></div>}
+    </>}</div>
+  </Workspace>;
+}

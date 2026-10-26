@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Marketing Strategist"
+description = "An AI-powered marketing strategy workspace for small businesses to bring product, customer, performance, and market signals together into explainable recommendations with seller-controlled execution."
+version = "1.0.0"
+id = "artifacts/marketing-strategist"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21862
+
+[services.development]
+run = "pnpm --filter @workspace/marketing-strategist run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/marketing-strategist", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/marketing-strategist/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21862"
+BASE_PATH = "/"

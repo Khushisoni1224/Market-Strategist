@@ -1,0 +1,22 @@
+import { type ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ErrorBoundary } from '../components/error-boundary';
+import { Toaster } from '../components/ui/toaster';
+import { TooltipProvider } from '../components/ui/tooltip';
+import NotFound from '../pages/not-found';
+import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+import LandingPage from '../pages/LandingPage';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import Dashboard from '../pages/Dashboard';
+import Products from '../pages/Products';
+import Feedback from '../pages/Feedback';
+import Performance from '../pages/Performance';
+import Strategy from '../pages/Strategy';
+import History from '../pages/History';
+
+const queryClient=new QueryClient();
+function RoutedErrorBoundary({children}:{children:ReactNode}){const [location]=useLocation();return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;}
+function Router(){return <RoutedErrorBoundary><Switch><Route path="/" component={LandingPage}/><Route path="/login" component={Login}/><Route path="/register" component={Register}/><Route path="/dashboard" component={Dashboard}/><Route path="/products" component={Products}/><Route path="/feedback" component={Feedback}/><Route path="/performance" component={Performance}/><Route path="/strategy" component={Strategy}/><Route path="/history" component={History}/><Route component={NotFound}/></Switch></RoutedErrorBoundary>;}
+function App(){return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/,'')}><Router/></WouterRouter><Toaster/></TooltipProvider></QueryClientProvider>;}
+export default App;

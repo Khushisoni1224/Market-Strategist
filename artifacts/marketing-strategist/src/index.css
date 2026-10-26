@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@config "../tailwind.config.js";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --font-sans: var(--app-font-sans);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  color-scheme: light;
+  --background: 220 23% 98%;
+  --foreground: 258 62% 10%;
+  --border: 220 17% 90%;
+  --input: 220 17% 90%;
+  --ring: 258 83% 51%;
+  --card: 0 0% 100%;
+  --card-foreground: 258 62% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 258 62% 10%;
+  --primary: 258 83% 51%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 258 33% 96%;
+  --secondary-foreground: 258 62% 18%;
+  --muted: 220 20% 95%;
+  --muted-foreground: 220 10% 44%;
+  --accent: 258 33% 96%;
+  --accent-foreground: 258 83% 36%;
+  --destructive: 0 68% 53%;
+  --destructive-foreground: 0 0% 100%;
+  --app-font-sans: 'DM Sans', sans-serif;
+  --radius: 0.9rem;
+  --shadow-soft: 0 12px 34px rgba(31, 17, 64, .055);
+}
+.dark {
+  color-scheme: dark;
+  --background: 258 43% 8%;
+  --foreground: 220 22% 94%;
+  --border: 258 22% 22%;
+  --input: 258 22% 22%;
+  --ring: 258 83% 67%;
+  --card: 258 37% 11%;
+  --card-foreground: 220 22% 94%;
+  --popover: 258 37% 11%;
+  --popover-foreground: 220 22% 94%;
+  --primary: 258 83% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 258 24% 18%;
+  --secondary-foreground: 220 22% 94%;
+  --muted: 258 24% 18%;
+  --muted-foreground: 220 12% 68%;
+  --accent: 258 24% 18%;
+  --accent-foreground: 258 83% 77%;
+  --destructive: 0 62% 52%;
+  --destructive-foreground: 0 0% 100%;
+}
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans antialiased; margin:0; }
+  button, a, input, select { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid hsl(var(--ring) / .45); outline-offset: 2px; }
+}
+.font-display { font-family: 'Manrope', sans-serif; }
+.surface { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); box-shadow: var(--shadow-soft); }
+.animate-in { animation: rise-in .45s cubic-bezier(.2,.7,.2,1) both; }
+.stagger-1 { animation-delay: .06s; }.stagger-2 { animation-delay: .12s; }.stagger-3 { animation-delay: .18s; }
+@keyframes rise-in { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
