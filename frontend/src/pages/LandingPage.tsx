@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, BarChart3, Building2, CheckCircle2, ChevronLeft, ChevronRight, Package, Repeat, Sparkles, TrendingUp, UserPlus, type LucideIcon } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import { actions, sentiment, traffic } from "../data/demo-data";
-import { Blobs, FlowArt } from "../components/Art";
+import { Blobs } from "../components/Art";
+import { ChallengeSection, FinalCTA, HumanLoopSection, SignalSection, SolutionSection, StorySection } from "../components/landing/Sections";
 
 interface Step { title: string; desc: string; items: string[]; icon: LucideIcon }
 const flow: Step[] = [
@@ -59,6 +60,11 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </header>
+
+      <StorySection />
+      <ChallengeSection />
+      <SolutionSection />
+      <SignalSection />
 
       <section id="features" className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="text-center text-3xl font-bold">Your project flow at a glance</h2>
@@ -122,17 +128,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 md:grid-cols-2">
-        <FlowArt className="w-full drop-shadow-xl" />
-        <div><h2 className="text-3xl font-bold">Built for small business owners</h2>
-          <p className="mt-3 text-slate-600">No analyst needed. Add your business and products, and Market-Strategist turns your feedback and performance signals into clear, ranked actions, each with the reasoning behind it.</p>
-          <Link to="/signup" className="mt-6 inline-flex items-center gap-2 rounded-full bg-violet-600 px-6 py-3 font-medium text-white">Create Your Account <ArrowRight size={16} /></Link></div>
-      </section>
-
-      <section className="bg-gradient-to-b from-white to-violet-50 py-16 text-center">
-        <h2 className="text-3xl font-bold">Ready to turn your data into strategy?</h2>
-        <div className="mt-6 flex justify-center gap-3"><Link to="/signup" className="rounded-full bg-violet-600 px-6 py-3 font-medium text-white">Create Your Account</Link><Link to="/login" className="rounded-full border border-slate-200 bg-white px-6 py-3 font-medium">Log In</Link></div>
-      </section>
+      <HumanLoopSection />
+      <FinalCTA />
 
       <footer className="bg-slate-900 text-slate-300">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-4">
