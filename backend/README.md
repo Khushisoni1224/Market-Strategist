@@ -200,3 +200,25 @@ To stay current: `git fetch origin` then `git merge origin/main` on your branch 
 | Swagger login 401 | Use your **email** in the `username` field; register first. |
 | `Target database is not up to date` (autogenerate) | Run `alembic upgrade head` first. |
 | Browser CORS error from React | Add the React origin to `CORS_ORIGINS`, restart uvicorn. |
+
+
+## Strategy engine integration (Member 4)
+
+The strategy engine is now registered under `/api/v1/strategy`, `/api/v1/recommendations`,
+and `/api/v1/dashboard/summary`. All routes use the existing JWT-authenticated seller and
+scope records to that seller. It defaults to a mock LLM provider; to use an OpenAI-compatible
+provider, set `LLM_PROVIDER=openai` and `LLM_API_KEY` in your private `.env` file.
+
+Apply the new migration after setting up the database:
+
+```powershell
+alembic upgrade head
+```
+
+The first integration uses real products and product-linked customer feedback. The current
+schema does not attach engagement, enquiries, customer requests, or seasonality to products,
+so those signals are explicitly marked missing rather than fabricated. For useful scores,
+link imported feedback to products; expanding the data model to store product-level campaign
+metrics and demand is a follow-up task.
+
+Do not commit `.env`, credentials, database files, virtual environments, or `__pycache__`.
