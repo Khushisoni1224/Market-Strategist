@@ -8,7 +8,7 @@ and resolve merge conflicts by keeping everybody's include_router lines.
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, business_profile, onboarding, products
+from app.api.v1.endpoints import (  analytics, auth, business_profile, feedback, marketing, onboarding, products, )
 
 api_router = APIRouter()
 
@@ -25,4 +25,9 @@ api_router.include_router(onboarding.router)
 api_router.include_router(products.router)
 
 # --- Member 3 (feedback, analytics): add your include_router lines here ---
+
+
+api_router.include_router(feedback.router)
+api_router.include_router(marketing.router)
+api_router.include_router(analytics.router)
 # --- Member 4 (strategy, recommendations): add your include_router lines here ---
